@@ -14,7 +14,7 @@ public class MainTree {
 //		String connectorString2 = "[(p.1)-(p.2)]-(p.3)-[(p.4)-(p.5)]";
 		String connectorString = "[(p.1)-(p.2)]-(p.3)`-[(p.4)-(p.5)]";
 		String connectorString1 = "[(p.1)-(p.2)]-[(p.3)-(p.4)]";
-		String connectorString2 = "[(p.1)-(p.2)-(p.7)]`-(p.3)`-[(p.4)-(p.5)]";
+		String connectorString2 = "[(p.1)-(p.2)]`-(p.3)`-[(p.4)-(p.5)]";
 		String connectorString3 = "[(p.1)-(p.2)]`-(p.3)-(p.4)";
 		String connectorString4 = "(p.1)`-(p.2)-[(p.3)-(p.4)]";
 		String connectorString5 = "[(p.1)`-(p.2)]-(p.3)-[(p.4)`-[(p.5)`-(p.6)]]";
@@ -53,7 +53,7 @@ public class MainTree {
 //		System.out.println("--reduce");
 		TreeNode reducedTree = renewTree(root);
 //		reducedTree.traversal();
-		return reducedTree.printMacro("");
+		return reducedTree.printRequireMacro("") + "\n" + reducedTree.printAcceptMacro("");
 	}
 	
 	public static void main(String[] args) {
