@@ -5,11 +5,11 @@ import java.util.ArrayList;
 public class TreeNode {
 
 	private TreeNode parent;
-	private String content;
+	private String content; // e.g. Tomcat.start
 	private String componentTypeName; // e.g. Tomcat
 	private String portTypeName; // e.g. start
-	private boolean trigger; // true means the node is a trigger, false means the node is a synchron
-	private boolean canRemove;
+	private boolean trigger; // trigger or sync
+	private boolean canRemove;	//can be removed
 	private ArrayList<TreeNode> export; // null means the node is a leaf, i.e. a port
 	private ArrayList<TreeNode> children; // null means the node is a leaf, i.e. a port
 	
@@ -83,8 +83,8 @@ public class TreeNode {
 				}
 			}
 		}
-		String accept = result.replaceAll("\\.requires\\(", "\\.accepts\\(");
-		return result + "\n" + accept;
+		
+		return result;
 	}
 	
 	/**
@@ -132,7 +132,7 @@ public class TreeNode {
 				
 				/**
 				 * 4. synch & trigger are compound
-				 * -> synch_i accepts trig_i
+				 * -> synch_i requires trig_i
 				 * */
 				if (triggers.isCompound() && synch.isCompound()) {
 					for (TreeNode epSynch : synch.getExport()) {
@@ -152,124 +152,6 @@ public class TreeNode {
 						result += "\t\tport(" + epSynch.getComponentTypeName() + "Connector.class, \"" + epSynch.getPortTypeName() + "\")"
 								+ ".requires(" + triggers.getComponentTypeName() + "Connector.class, \"" + triggers.getPortTypeName() + "\");\n";
 					}
-				}
-			}
-		}
-		
-		return result;
-	}
-	
-	/**
-	 * generate accepts Macro code for BROADCAST connector 
-	 * */
-	public String generateAcceptsBroadcastConnector(ArrayList<TreeNode> listSynch, ArrayList<TreeNode> listTriggers) {
-		String result = "";
-		//Sync accepts Trigs
-		for (TreeNode synch : listSynch) {
-			if (!synch.isCompound()) {
-				
-				ArrayList<String> trigList = new ArrayList<String>();
-				for (TreeNode triggers : listTriggers) {
-					if (!triggers.isCompound()) {
-						String temp = triggers.getComponentTypeName() + "Connector.class, \"" + triggers.getPortTypeName() + "\"";
-						trigList.add(temp);
-					}else {
-						for (TreeNode trigEx : triggers.getExport()) {
-							String temp = trigEx.getComponentTypeName() + "Connector.class, \"" + trigEx.getPortTypeName() + "\"";
-							trigList.add(temp);
-						}
-					}
-				}
-				if (trigList.size() > 0) {
-					result += "\t\tport(" + synch.getComponentTypeName() + "Connector.class, \"" + synch.getPortTypeName() + "\")"
-							+ ".accepts(";
-					for (int i=0 ; i<trigList.size()-1 ; i++) {
-						result += trigList.get(i) + ", ";
-					}
-					result += trigList.get(trigList.size()-1) + ");\n";
-				}
-//				System.out.println(trigList.size());
-				
-			}else {
-				ArrayList<TreeNode> listSynchExport = synch.getExport();
-				for (TreeNode synchEx : listSynchExport) {
-					
-					ArrayList<String> trigList = new ArrayList<String>();
-					for (TreeNode triggers : listTriggers) {
-						if (!triggers.isCompound()) {
-							String temp = triggers.getComponentTypeName() + "Connector.class, \"" + triggers.getPortTypeName() + "\"";
-							trigList.add(temp);
-						}else {
-							for (TreeNode trigEx : triggers.getExport()) {
-								String temp = trigEx.getComponentTypeName() + "Connector.class, \"" + trigEx.getPortTypeName() + "\"";
-								trigList.add(temp);
-							}
-						}
-					}
-					
-					if (trigList.size() > 0) {
-						result += "\t\tport(" + synchEx.getComponentTypeName() + "Connector.class, \"" + synchEx.getPortTypeName() + "\")"
-								+ ".accepts(";
-						for (int i=0 ; i<trigList.size()-1 ; i++) {
-							result += trigList.get(i) + ", ";
-						}
-						result += trigList.get(trigList.size()-1) + ");\n";
-					}
-					
-				}
-			}
-		}
-		
-		//Sync accepts Trigs
-		for (TreeNode trigs : listTriggers) {
-			if (!trigs.isCompound()) {
-				
-				ArrayList<String> syncList = new ArrayList<String>();
-				for (TreeNode sync : listSynch) {
-					if (!sync.isCompound()) {
-						String temp = sync.getComponentTypeName() + "Connector.class, \"" + sync.getPortTypeName() + "\"";
-						syncList.add(temp);
-					}else {
-						for (TreeNode synchEx : sync.getExport()) {
-							String temp = synchEx.getComponentTypeName() + "Connector.class, \"" + synchEx.getPortTypeName() + "\"";
-							syncList.add(temp);
-						}
-					}
-				}
-				
-				if (syncList.size() > 0) {
-					result += "\t\tport(" + trigs.getComponentTypeName() + "Connector.class, \"" + trigs.getPortTypeName() + "\")"
-							+ ".accepts(";
-					for (int i=0 ; i<syncList.size()-1 ; i++) {
-						result += syncList.get(i) + ", ";
-					}
-					result += syncList.get(syncList.size()-1) + ");\n";
-				}
-			}else {
-				ArrayList<TreeNode> listTrigsExport = trigs.getExport();
-				for (TreeNode trigsEx : listTrigsExport) {
-					
-					ArrayList<String> syncList = new ArrayList<String>();
-					for (TreeNode sync : listSynch) {
-						if (!sync.isCompound()) {
-							String temp = sync.getComponentTypeName() + "Connector.class, \"" + sync.getPortTypeName() + "\"";
-							syncList.add(temp);
-						}else {
-							for (TreeNode syncEx : sync.getExport()) {
-								String temp = syncEx.getComponentTypeName() + "Connector.class, \"" + syncEx.getPortTypeName() + "\"";
-								syncList.add(temp);
-							}
-						}
-					}
-					if (syncList.size() > 0) {
-						result += "\t\tport(" + trigsEx.getComponentTypeName() + "Connector.class, \"" + trigsEx.getPortTypeName() + "\")"
-								+ ".accepts(";
-						for (int i=0 ; i<syncList.size()-1 ; i++) {
-							result += syncList.get(i) + ", ";
-						}
-						result += syncList.get(syncList.size()-1) + ");\n";
-					}
-					
 				}
 			}
 		}
@@ -314,93 +196,6 @@ public class TreeNode {
 		return result;
 	}
 	
-	/**
-	 * generate accept Macro code for ATOMIC BROADCAST connector 
-	 * */
-	public String generateAcceptAtomicBroadcastConnector(ArrayList<TreeNode> listSynch) {
-		String result = "";
-		if (parent != null) {
-			ArrayList<TreeNode> listAboveTrig = getListTriggers(parent.getChildren());
-
-			for (TreeNode aboveTrig : listAboveTrig) {
-				if (!aboveTrig.isCompound()) {
-					result += "\t\tport(" + aboveTrig.getComponentTypeName() + "Connector.class, \"" + aboveTrig.getPortTypeName() + "\")"
-							+ ".accepts(";
-					for (int i=0 ; i<listSynch.size()-1 ; i++) {
-						TreeNode portI = listSynch.get(i);
-						result += portI.getComponentTypeName() + "Connector.class, \"" + portI.getPortTypeName() + "\", ";
-					}
-					result += listSynch.get(listSynch.size()-1).getComponentTypeName() 
-							+ "Connector.class, \"" + listSynch.get(listSynch.size()-1).getPortTypeName() + "\");\n";
-				}else {
-					if (!this.isTrigger()) {
-						ArrayList<TreeNode> listExportedTrig = aboveTrig.getExport();
-						for (TreeNode aboveExportTrig : listExportedTrig) {
-							result += "\t\tport(" + aboveExportTrig.getComponentTypeName() + "Connector.class, \"" + aboveExportTrig.getPortTypeName() + "\")"
-									+ ".accepts(";
-							for (int i=0 ; i<listSynch.size()-1 ; i++) {
-								TreeNode portI = listSynch.get(i);
-								result += portI.getComponentTypeName() + "Connector.class, \"" + portI.getPortTypeName() + "\", ";
-							}
-							result += listSynch.get(listSynch.size()-1).getComponentTypeName() 
-									+ "Connector.class, \"" + listSynch.get(listSynch.size()-1).getPortTypeName() + "\");\n";
-						}
-					}
-					
-				}
-				
-				if (!this.isTrigger()) {
-					for (int i=0 ; i<listSynch.size() ; i++) {
-						TreeNode portI = listSynch.get(i);
-						result += "\t\tport(" + portI.getComponentTypeName() + "Connector.class, \"" + portI.getPortTypeName() + "\")"
-								+ ".accepts(";
-						for (int j=0 ; j<listSynch.size() ; j++) {
-							if (i != j) {
-								TreeNode portJ = listSynch.get(j);
-								result += portJ.getComponentTypeName() + "Connector.class, \"" + portJ.getPortTypeName() + "\", ";
-								if (!aboveTrig.isCompound()) {
-									result += aboveTrig.getComponentTypeName() + "Connector.class, \"" + aboveTrig.getPortTypeName() + "\");\n";
-								}else {
-									ArrayList<TreeNode> epPorts = aboveTrig.getExport();
-									for (int k=0 ; k<epPorts.size()-1 ; k++) {
-										result += epPorts.get(k).componentTypeName + "Connector.class, \"" + epPorts.get(k).getPortTypeName() + "\", ";
-									}
-									result += epPorts.get(epPorts.size()-1).getComponentTypeName() 
-											+ "Connector.class, \"" + epPorts.get(epPorts.size()-1).getPortTypeName() + "\");\n";
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		
-		
-		return result;
-	}
-	
-	public String printAcceptMacro(String result) {
-		for (TreeNode leaf : children) {
-			result = leaf.printAcceptMacro(result);
-		}
-		if (children.size() > 0) {
-			ArrayList<TreeNode> listTriggers = getListTriggers(children);
-			ArrayList<TreeNode> listSynch = getListSynch(children);
-			if (listTriggers.size() == 0) {
-				
-				//ATOMIC BROADCAST
-				if (parent!=null && !parent.allChildrenAreSync()){
-					result += generateAcceptAtomicBroadcastConnector(listSynch);
-				}//RENDEZVOUS
-			} //BROADCAST
-			else {
-				result += generateAcceptsBroadcastConnector(listSynch, listTriggers);
-			}
-//			result += generateAcceptsBroadcastConnector(listSynch, listTriggers);
-//			result += generateAcceptAtomicBroadcastConnector(listSynch);
-		}
-		return result;
-	}
 	
 	public String printRequireMacro(String result) {
 		//String result = "";
@@ -430,7 +225,6 @@ public class TreeNode {
 					}
 				}
 			}
-//			result += generateAcceptsBroadcastConnector(listSynch, listTriggers);
 		}
 		return result;		
 	}
@@ -439,16 +233,16 @@ public class TreeNode {
 	 * */
 	public void markReduceTree() {
 		if (parent != null) {
-			if (allChildrenAreTrigger() && !hasCompoundInChildren()) {
-				if (getContent().matches("c[0-9]+.null")) {
-					this.canRemove = true;
-				}
-				for (TreeNode child : children) {
-					child.setParent(parent);
-				}
-			}
+//			if (allChildrenAreTrigger() && !hasCompoundInChildren()) {
+//				if (getContent().matches("c[0-9]+.null")) {
+//					this.canRemove = true;
+//				}
+//				for (TreeNode child : children) {
+//					child.setParent(parent);
+//				}
+//			}
 			
-			if (allChildrenAreSync() && !hasCompoundInChildrenAndCanRemove() && parent.allChildrenAreSync()) {
+			if (allChildrenAreSync() && !hasCompoundInChildren() && parent.allChildrenAreSync()) {
 				if (getContent().matches("c[0-9]+.null")) {
 					this.canRemove = true;
 				}
@@ -590,7 +384,7 @@ public class TreeNode {
     public boolean hasCompoundInChildren() {
     	for (TreeNode child : children) {
     		if (child.isCompound()) {
-    			System.out.println("check content of compound " + child.getContent());
+//    			System.out.println("check content of compound " + child.getContent());
     			return true;
     		}
     	}

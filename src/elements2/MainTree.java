@@ -20,6 +20,9 @@ public class MainTree {
 		String connectorString5 = "[(p.1)`-(p.2)]-(p.3)-[(p.4)`-[(p.5)`-(p.6)]]";
 		String connectorString6 = "[(p.1)`-(p.2)]-[(p.3)`-(p.4)]";
 		String connectorString7 = "[(p.1)`-(p.2)]`-(p.3)-[(p.4)-(p.5)]";
+		String connectorString8 = "(p.1)`-(p.2)-[(p.3)`-(p.4)`]";
+		String connectorString9 = "(p.1)-[(p.2)`-(p.3)`]";
+		String connectorString10 = "(p.1)`-[[(p.2)`-[(p.2a)-(p.2b]]]-[(p.3)`-(p.3a)]]";
 		
 		System.out.println("--- String 1: " + connectorString);
 		System.out.println(genMacroCode(connectorString));
@@ -44,16 +47,112 @@ public class MainTree {
 //		
 		System.out.println("--- String 8: " + connectorString7);
 		System.out.println(genMacroCode(connectorString7));
+//		
+
+		System.out.println("--- String 9: " + connectorString8);
+		System.out.println(genMacroCode(connectorString8));
+//		
+		System.out.println("--- String 10: " + connectorString9);
+		System.out.println(genMacroCode(connectorString9));
+//		
+		System.out.println("--- String 11: " + connectorString10);
+		System.out.println(genMacroCode(connectorString10));
+	}
+	
+//	public String generatingDataTransfer(Annotation annotation) {
+//		//data: int x: Tracker-Peer
+//		String input = annotation.getValue();
+//		String rs = "";
+//		String[] parts = input.split(":");
+//		String[] varInfor = parts[1].trim().split(" ");
+//		String[] dataClasses = parts[2].trim().split("-");
+//		rs += "\t\tdata(" + dataClasses[0].trim() + "Connector.class, \"" + varInfor[1] + "\").to(" + dataClasses[1].trim() + "Connector.class, \"" + varInfor[1] + "\");\n";
+//		System.out.println(rs);
+//		return rs;
+//	}
+	public String generatingMacroCode(String annotation) {
+		ArrayList<String> listConnectors = readAnnotations(annotation);
+		String rs = "";
+		for (String con : listConnectors) {
+//			rs += "\t\t//" + con;
+			rs += genMacroCode(con);
+		}
+		return rs;
+	}
+	
+	public ArrayList<String> readAnnotations(String annotation) {
+
+        String readLine = annotation.toString();
+        ArrayList<String> result = new ArrayList<String>();
+        System.out.println("Anno: " + annotation);
+
+    	if(readLine.contains("data:")) {
+    		
+    	}else if(readLine.contains("prop:")) {
+    		
+    	}
+    	else {
+    		if (readLine.contains("+")) {
+    			String[] subConnectors = readLine.split("\\+");
+              	 for (String con : subConnectors) {
+              		 String standardCon = con.trim();
+              		 result.add(standardCon);
+              	 }
+    		}else {
+    			String standardCon = readLine.trim();
+    			result.add(standardCon);
+    		}
+    	}
+    	return result;
 	}
 	
 	public String genMacroCode(String connectorString) {
 		TreeNode root = new TreeNode("root.null", false, null);
 		createTree(root, connectorString, 0);
-//		root.traversal();
-//		System.out.println("--reduce");
+
 		TreeNode reducedTree = renewTree(root);
 //		reducedTree.traversal();
-		return reducedTree.printRequireMacro("") + "\n" + reducedTree.printAcceptMacro("");
+		return reducedTree.printRequireMacro("") + "\n" + genAcceptsCode(connectorString);
+	}
+	
+	/**
+	 * Gen ACCEPTS Code
+	 * */
+	public String genAcceptsCode(String connectorString) {
+		String rs = "";
+		TreeNode root = new TreeNode("root.null", false, null);
+		createTree(root, connectorString, 0);
+		TreeNode clone = root;
+		clone.markReduceTree();
+		ArrayList<TreeNode> lNodes = tree2List(clone);
+		for (int i=0 ; i<lNodes.size() ; i++) {
+			if (!lNodes.get(i).getContent().contains("null")) {
+				rs += "\t\tport(" + lNodes.get(i).getComponentTypeName() + "Connector.class, \"" + lNodes.get(i).getPortTypeName() + "\")"
+						+ ".accepts(";
+				for (int j=0 ; j<lNodes.size() ; j++) {
+					if (i != j) {
+						TreeNode portJ = lNodes.get(j);
+						if (!portJ.getContent().contains("null")) {
+							String s = portJ.getComponentTypeName() + "Connector.class, \"" + portJ.getPortTypeName() + "\"";
+							if (i != lNodes.size() - 1) {
+								if (j != lNodes.size() - 1) {
+									rs += s + ", ";
+								} else {
+									rs += s + ");\n";
+								}
+							} else {
+								if (j != lNodes.size() - 2) {
+									rs += s + ", ";
+								} else {
+									rs += s + ");\n";
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return rs;
 	}
 	
 	public static void main(String[] args) {
