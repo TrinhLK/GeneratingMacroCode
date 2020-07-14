@@ -22,7 +22,8 @@ public class MainTree {
 		String connectorString7 = "[(p.1)`-(p.2)]`-(p.3)-[(p.4)-(p.5)]";
 		String connectorString8 = "(p.1)`-(p.2)-[(p.3)`-(p.4)`]";
 		String connectorString9 = "(p.1)-[(p.2)`-(p.3)`]";
-		String connectorString10 = "(p.1)`-[[(p.2)`-[(p.2a)-(p.2b]]]-[(p.3)`-(p.3a)]]";
+		String connectorString10 = "(p.1)`-[[(p.2)`-[(p.2a)-(p.2b]]-[(p.3)`-(p.3a)]]";
+		String connectorString11 = "(p.1)`-(p.2)`-(p.3)";
 		
 		System.out.println("--- String 1: " + connectorString);
 		System.out.println(genMacroCode(connectorString));
@@ -48,7 +49,6 @@ public class MainTree {
 		System.out.println("--- String 8: " + connectorString7);
 		System.out.println(genMacroCode(connectorString7));
 //		
-
 		System.out.println("--- String 9: " + connectorString8);
 		System.out.println(genMacroCode(connectorString8));
 //		
@@ -57,6 +57,9 @@ public class MainTree {
 //		
 		System.out.println("--- String 11: " + connectorString10);
 		System.out.println(genMacroCode(connectorString10));
+//		
+		System.out.println("--- String 12: " + connectorString11);
+		System.out.println(genMacroCode(connectorString11));
 	}
 	
 //	public String generatingDataTransfer(Annotation annotation) {
@@ -74,7 +77,6 @@ public class MainTree {
 		ArrayList<String> listConnectors = readAnnotations(annotation);
 		String rs = "";
 		for (String con : listConnectors) {
-//			rs += "\t\t//" + con;
 			rs += genMacroCode(con);
 		}
 		return rs;
@@ -266,6 +268,7 @@ public class MainTree {
 			
 			//after compound
 			if (q + 1 < connectorString.length()) {
+				index = index+10;
 				String remainStr = connectorString.substring(q + 1, connectorString.length());
 				if (remainStr.indexOf("-") == 0) {
 					remainStr = remainStr.substring(1);

@@ -104,7 +104,7 @@ public class TreeNode {
 				}
 				
 				/**
-				 * 2. synch compound, !trigger
+				 * 2. synch compound, trigger not compound
 				 * -> exportSynch_i requires trig
 				 * */
 				if (!triggers.isCompound() && synch.isCompound()) {
@@ -115,7 +115,7 @@ public class TreeNode {
 				}
 				
 				/**
-				 * 3. !synch but trigger
+				 * 3. synch not compound but trigger
 				 * -> synch requires trig_i
 				 * */
 				if (triggers.isCompound() && !synch.isCompound()) {
@@ -208,16 +208,47 @@ public class TreeNode {
 			ArrayList<TreeNode> listSynch = getListSynch(children);
 			
 			if (listTriggers.size() == 0) {
-				
+//				System.out.println(this.getContent() + ":\tno trigger");
 				//ATOMIC BROADCAST
-				if (parent!=null && !parent.allChildrenAreSync()){
-					result += generateRequireAtomicBroadcastConnector(listSynch);
-				}//RENDEZVOUS
-				else {
-					result += generateRendezConnector(listSynch);
-				}				
+				// parent != null and siblings have triggers
+				if (parent!=null){
+					if (!parent.allChildrenAreSync()) {
+						result += generateRequireAtomicBroadcastConnector(listSynch);
+					}else { //RENDEZ
+						result += generateRendezConnector(listSynch);
+					}
+				}
 			}	//BROADCAST
 			else {
+				if(parent!=null) {
+					if (parent.allChildrenAreSync()) {
+						String temp = "";
+						ArrayList<TreeNode> siblings = parent.getChildren();
+//						result += generateRendezConnector(siblings);
+//						System.out.println("Broadcast 2: " + siblings);
+						for (TreeNode s : siblings) {
+							if (s.isCompound() && s.getExport().get(0).isTrigger()) {
+								/*
+								 * Broadcast2
+								 * */
+//								System.out.println("Broadcast 2: " + siblings);
+								for (TreeNode sExport : s.getExport()) {
+									for (TreeNode sb : siblings) {
+										if (sb != s && !sb.isCompound()) {
+											temp += "\t\tport(" + sb.getComponentTypeName() + "Connector.class, \"" + sb.getPortTypeName() + "\")"
+													+ ".requires(" 
+													+ sExport.getComponentTypeName() + "Connector.class, \"" + sExport.getPortTypeName() + "\");\n";
+											temp += "\t\tport(" + sExport.getComponentTypeName() + "Connector.class, \"" + sExport.getPortTypeName() + "\")"
+													+ ".requires(" 
+													+ sb.getComponentTypeName() + "Connector.class, \"" + sb.getPortTypeName() + "\");\n";
+										}
+									}
+								}
+							}
+						}
+						result += temp;
+					}
+				}
 				result += generateRequiresBroadcastConnector(listSynch, listTriggers);
 				for (TreeNode trig : listTriggers) {
 					if (trig.isCompound() && !trig.getExport().get(0).isTrigger()) {
@@ -257,12 +288,21 @@ public class TreeNode {
 	}
 	
 	public void traversal() {
+		String rs = "";
 		if (parent != null) {
-			System.out.println(content + "\t" + isTrigger() + "\t" + parent.getContent() + "\trm: " + canRemove);
+			rs += content + "\t" + isTrigger() + "\t" + parent.getContent() + "\t";
+			if (this.isCompound()) {
+				rs += this.getExport() + "\t children: " + this.getChildren();
+			}
+			
 		}else {
-			System.out.println(content + "\t" + isTrigger() + "\trm: " + canRemove);
+			rs += content + "\t" + isTrigger() + "\t";
+			if (this.isCompound() || this.getContent().contains("root")) {
+				rs += this.getExport() + "\t children: " + this.getChildren();
+			}
+			
 		}
-		
+		System.out.println(rs);
 		for (TreeNode leaf : children) {
 			leaf.traversal();
 		}
@@ -375,7 +415,7 @@ public class TreeNode {
     public boolean hasCompoundInChildrenAndCanRemove() {
     	for (TreeNode child : children) {
     		if (child.isCompound() && child.isCanRemove()) {
-    			System.out.println("check content of child " + child.getContent());
+//    			System.out.println("check content of child " + child.getContent());
     			return true;
     		}
     	}
