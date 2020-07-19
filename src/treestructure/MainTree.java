@@ -1,4 +1,4 @@
-package elements2;
+package treestructure;
 
 import java.util.ArrayList;
 import java.util.Stack;
@@ -22,9 +22,11 @@ public class MainTree {
 		String connectorString7 = "[(p.1)`-(p.2)]`-(p.3)-[(p.4)-(p.5)]";
 		String connectorString8 = "(p.1)`-(p.2)-[(p.3)`-(p.4)`]";
 		String connectorString9 = "(p.1)-[(p.2)`-(p.3)`]";
-		String connectorString10 = "(p.1)`-[[(p.2)`-[(p.2a)-(p.2b]]-[(p.3)`-(p.3a)]]";
+		String connectorString10 = "(p.1)`-[[(p.2)`-(p.21)`-[(p.2a)-(p.2b]]-[(p.3)`-(p.31)`-(p.3a)]]";
 		String connectorString11 = "(p.1)`-(p.2)`-(p.3)";
-		String connectorString12 = "[(p.1a)`-(p.1b)`-(p.1c)]-(p.2)-[(p.3a)`-[(p.3b)-(p.3c)]`-(p.3d)]";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
+		String connectorString12 = "[(p.1a)`-(p.1b)`-(p.1c)]-(p.2)-[(p.3a)`-[(p.3b)-(p.3c)]`-[(p.3d)-(p.3e)]]"
+				+ "-[(p.3a1)`-[(p.3b1)-(p.3c1)]`-[(p.3d1)-(p.3e1)]]";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
+		String connectorString13 = "[(p.1a)`-(p.1b)`-(p.1c)]-(p.2)-[(p.3a)`-[(p.3b)`-[(p.3c1)-(p.3c2)]`-(p.3e)]`-(p.3d)]";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
 
 		
 		System.out.println("--- String 1: " + connectorString);
@@ -65,6 +67,9 @@ public class MainTree {
 //		
 		System.out.println("--- String 13: " + connectorString12);
 		System.out.println(genMacroCode(connectorString12));
+//		
+		System.out.println("--- String 14: " + connectorString13);
+		System.out.println(genMacroCode(connectorString13));
 	}
 	
 //	public String generatingDataTransfer(Annotation annotation) {
@@ -113,12 +118,16 @@ public class MainTree {
     	return result;
 	}
 	
+	/**
+	 * Generate requires + accepts functions for Glue Builder
+	 * */
 	public String genMacroCode(String connectorString) {
 		TreeNode root = new TreeNode("root.null", false, null);
 		createTree(root, connectorString, 0);
 
 		TreeNode reducedTree = renewTree(root);
-//		reducedTree.traversal();
+		reducedTree.traversal();
+//		return "";
 		return reducedTree.printRequireMacro("") + "\n" + genAcceptsCode(connectorString);
 	}
 	
@@ -174,10 +183,33 @@ public class MainTree {
 	public TreeNode renewTree(TreeNode root) {
 		TreeNode clone = root;
 		clone.markReduceTree();
+//		System.out.println("----Original----");
+//		root.traversal();
+//		System.out.println("--------");
 		ArrayList<TreeNode> lNodes = tree2List(clone);
 		lNodes = List2Tree(lNodes);
 		lNodes.get(0).addExportedPort();
+		updateExportList(lNodes.get(0));
 		return lNodes.get(0);
+	}
+	
+	/**
+	 * Update the export list 
+	 * */
+	public void updateExportList(TreeNode root) {
+		
+		if (root.getChildren().size() > 0) {
+			for (TreeNode child : root.getChildren()) {
+				ArrayList<TreeNode> newList = new ArrayList<TreeNode>();
+				if (child.getExport().size() > 0) {
+					child.reOrganizeExportedList(newList, child);
+					child.setExport(newList);
+				}
+//				System.out.println(child.getContent() + "\tnewExport: " + newList);
+			}
+		}
+
+		
 	}
 	
 	public ArrayList<TreeNode> tree2List(TreeNode root) {
@@ -263,11 +295,17 @@ public class MainTree {
 			String nextLevelConnector = connectorString.substring(pos + 1, q-1);
 //			System.out.println(connectorString);
 //			System.out.println(connectorString.indexOf("]"));
+			
+			
 			boolean isTrigger = false;
-			if (connectorString.indexOf("]`") > 0) {
-				isTrigger = true;
+
+			if (q + 1 < connectorString.length()) {
+				String temp = connectorString.substring(pos, q+1);
+				if (temp.charAt(temp.length()-1) == '`')
+					isTrigger = true;
 			}
-			TreeNode compound = new TreeNode("c" + index + ".null", isTrigger, root);
+			
+			TreeNode compound = new TreeNode("c" + pos + index + ".null", isTrigger, root);
 			root.getChildren().add(compound);
 			createTree(compound, nextLevelConnector, index+1);
 			

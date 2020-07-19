@@ -99,6 +99,7 @@ public class TreeNode {
 				 * -> flat broadcast
 				 * */
 				if (!triggers.isCompound() && !synch.isCompound()) {
+					result += "//1st case: no compound\n";
 					result += "\t\tport(" + synch.getComponentTypeName() + "Connector.class, \"" + synch.getPortTypeName() + "\")"
 							+ ".requires(" + triggers.getComponentTypeName() + "Connector.class, \"" + triggers.getPortTypeName() + "\");\n";
 				}
@@ -108,6 +109,7 @@ public class TreeNode {
 				 * -> exportSynch_i requires trig
 				 * */
 				if (!triggers.isCompound() && synch.isCompound()) {
+					result += "//2nd case: synch compound, trig is not\n";
 					for (TreeNode epSynch : synch.getExport()) {
 						result += "\t\tport(" + epSynch.getComponentTypeName() + "Connector.class, \"" + epSynch.getPortTypeName() + "\")"
 								+ ".requires(" + triggers.getComponentTypeName() + "Connector.class, \"" + triggers.getPortTypeName() + "\");\n";
@@ -119,6 +121,7 @@ public class TreeNode {
 				 * -> synch requires trig_i
 				 * */
 				if (triggers.isCompound() && !synch.isCompound()) {
+					result += "//3rd case: trig compound, synch is not\n";
 					String tempTrig = "";
 					for (int i=0 ; i<triggers.getExport().size()-1 ; i++) {
 						tempTrig += triggers.getExport().get(i).getComponentTypeName() + "Connector.class, \"" 
@@ -135,6 +138,7 @@ public class TreeNode {
 				 * -> synch_i requires trig_i
 				 * */
 				if (triggers.isCompound() && synch.isCompound()) {
+					result += "//4th case: both are compound\n";
 					for (TreeNode epSynch : synch.getExport()) {
 						for (TreeNode epTrig : triggers.getExport()) {
 							result += "\t\tport(" + epSynch.getComponentTypeName() + "Connector.class, \"" + epSynch.getPortTypeName() + "\")"
@@ -213,13 +217,21 @@ public class TreeNode {
 				// parent != null and siblings have triggers
 				if (parent!=null){
 					if (!parent.allChildrenAreSync()) {
+						result += "//ATOMIC BROADCAST\n";
 						result += generateRequireAtomicBroadcastConnector(listSynch);
 					}else { //RENDEZ
+						result += "//REN1\n";
 						result += generateRendezConnector(listSynch);
 					}
+				}else {
+					result += "//REN2\n";
+//					if (!hasCompoundInChildren())
+					result += generateRendezConnector(listSynch);
 				}
 			}	//BROADCAST
 			else {
+				//(p.1)-[(p.2)`-(p.3)`]
+				/*
 				if(parent!=null) {
 					if (parent.allChildrenAreSync()) {
 						String temp = "";
@@ -228,9 +240,8 @@ public class TreeNode {
 //						System.out.println("Broadcast 2: " + siblings);
 						for (TreeNode s : siblings) {
 							if (s.isCompound() && s.getExport().get(0).isTrigger()) {
-								/*
-								 * Broadcast2
-								 * */
+								 //* Broadcast2
+								
 //								System.out.println("Broadcast 2: " + siblings);
 								for (TreeNode sExport : s.getExport()) {
 									for (TreeNode sb : siblings) {
@@ -246,12 +257,16 @@ public class TreeNode {
 								}
 							}
 						}
+						result += "//BROADCAST2: " + parent.getContent() + "\n";
 						result += temp;
 					}
 				}
+				*/
+				result += "//BROADCAST1\n";
 				result += generateRequiresBroadcastConnector(listSynch, listTriggers);
 				for (TreeNode trig : listTriggers) {
 					if (trig.isCompound() && !trig.getExport().get(0).isTrigger()) {
+						result += "//REN3\n";
 						result += generateRendezConnector(trig.getExport());
 					}
 				}
@@ -430,6 +445,17 @@ public class TreeNode {
     	}
     	return false;
     }
+    
+    public boolean noCompoundInList(ArrayList<TreeNode> input) {
+    	for (TreeNode child : input) {
+    		if (child.isCompound()) {
+//    			System.out.println("check content of compound " + child.getContent());
+    			return false;
+    		}
+    	}
+    	return true;
+    }
+    
     public boolean isCompound() {
     	if (content.matches("c[0-9]+.null")) {
     		return true;
