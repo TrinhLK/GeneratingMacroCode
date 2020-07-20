@@ -481,15 +481,15 @@ public class TreeNode {
 	public void traversal() {
 		String rs = "";
 		if (parent != null) {
-			rs += content + "\t" + isTrigger() + "\t" + parent.getContent();// + "\t export:";
+			rs += content + "\t (trig? " + isTrigger() + ")\t parent:" + parent.getContent();// + "\t export:";
 			if (this.isCompound()) {
 				rs += "\t export: " + this.getExport();// + "\t children: " + this.getChildren();
 			}
 			
 		}else {
-			rs += content + "\t" + isTrigger();
+			rs += content + "\t (trig? " + isTrigger();
 			if (this.isCompound() || this.getContent().contains("root")) {
-				rs += "\t export: " + this.getExport();// + "\t children: " + this.getChildren();
+				rs += ")\t export: " + this.getExport();// + "\t children: " + this.getChildren();
 			}
 			
 		}
@@ -499,10 +499,15 @@ public class TreeNode {
 		}
 	}
 	
+	/**
+	 * To re-orgarnize the list of export in each compound node
+	 * */
 	public void reOrganizeExportedList(ArrayList<TreeNode> newList, TreeNode cur) {
 		
 		ArrayList<TreeNode> curList = cur.getExport();
 		if (curList.size() > 0) {
+			//If no compound in its export
+			//add all of them to a new export list
 			if (noCompoundInList(curList)) {
 			
 				if (cur.getParent().getContent().contains("root")) {
@@ -514,6 +519,9 @@ public class TreeNode {
 				}
 				return ;
 			}else {
+				//If has some compounds in its export
+				//Add all non-compounds
+				//Recursive call for compounds
 				for (TreeNode elem : curList) {
 					if (!elem.isCompound()) {
 						newList.add(elem);

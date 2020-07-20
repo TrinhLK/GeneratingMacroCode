@@ -189,6 +189,9 @@ public class MainTree {
 		ArrayList<TreeNode> lNodes = tree2List(clone);
 		lNodes = List2Tree(lNodes);
 		lNodes.get(0).addExportedPort();
+		System.out.println("----Original----");
+		lNodes.get(0).traversal();
+		System.out.println("--------");
 		updateExportList(lNodes.get(0));
 		return lNodes.get(0);
 	}
