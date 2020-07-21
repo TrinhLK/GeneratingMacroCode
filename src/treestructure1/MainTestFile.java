@@ -1,6 +1,8 @@
 package treestructure1;
 
+import java.util.ArrayList;
 import java.util.Stack;
+import java.util.StringJoiner;
 
 public class MainTestFile {
 
@@ -25,7 +27,7 @@ public class MainTestFile {
 		String connectorString12 = "[(p.1a)`-(p.1b)`-(p.1c)]-(p.2)-[(p.3a)`-[(p.3b)-(p.3c)]`-[(p.3d)-(p.3e)]]"
 				+ "-[(p.3a1)`-[(p.3b1)-(p.3c1)]`-[(p.3d1)-(p.3e1)]]";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
 		String connectorString13 = "[(p.1a)`-(p.1b)`-(p.1c)]-(p.2)-[(p.3a)`-[(p.3b)`-[(p.3c1)-(p.3c2)]`-(p.3e)]`-(p.3d)]";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
-		String connectorString14 = "[(p.1a)`-[(p.1b)-(p.1c)]`]`-[(p.3a)`-[(p.3b)-(p.3c)]`-p(3.d)]";
+		String connectorString14 = "[(p.1a)`-[(p.1b)-(p.1c)]`]`-[(p.3a)`-[(p.3b)-(p.3c)]`-(p.3d)]";
 		
 		System.out.println("--- String 1: " + connectorString);
 		System.out.println(genMacroCode(connectorString));
@@ -89,15 +91,40 @@ public class MainTestFile {
 	 * */
 	public String genMacroCode(String connectorString) {
 		TreeNode root = new TreeNode("root.null", false, null);
+		
 		createTree(root, connectorString, 0);
 		root.addExportedPort();
 		System.out.println("----Original----");
 		root.traversal();
 		System.out.println("--------");
+		ArrayList<TreeNode> listLeaves = new ArrayList<TreeNode>();
+		tree2List(root, listLeaves);
+		System.out.println("list Leave: " + listLeaves.size() + "\t" + listLeaves);
 //		TreeNode reducedTree = renewTree(root);
 //		reducedTree.traversal();
 //		return "";
-		return root.genRequiresCode("");// + "\n" + genAcceptsCode(connectorString);
+		return root.genRequiresCode("") + "\n" + genAcceptsCode(listLeaves);
+	}
+	
+	/**
+	 * Gen ACCEPTS Code
+	 * */
+	public String genAcceptsCode(ArrayList<TreeNode> input) {
+		String rs = "";
+		for (int i=0 ; i<input.size() ; i++) {
+			rs += "\t\tport(" + input.get(i).getComponentTypeName() + "Connector.class, \"" + input.get(i).getPortTypeName() + "\")"
+					+ ".accepts(";
+			StringJoiner joiner = new StringJoiner(", ");
+			for (int j=0 ; j<input.size() ; j++) {
+				if (i != j) {
+					String s = input.get(j).getComponentTypeName() + "Connector.class, \"" + input.get(j).getPortTypeName() + "\"";
+					joiner.add(s);
+				}
+			}
+			rs += joiner.toString() + ");\n";
+		}
+		
+		return rs;
 	}
 	
 	public void createTree(TreeNode root, String connectorString, int index){
@@ -172,5 +199,17 @@ public class MainTestFile {
 				createTree(root, remainStr, index+1);
 			}
 		}
+	}
+	
+	public void tree2List(TreeNode root, ArrayList<TreeNode> listNodes) {
+		
+		if (root.getChildren().size() == 0) {
+			listNodes.add(root);
+			return ;
+		}
+		for (TreeNode child : root.getChildren()) {
+			tree2List(child, listNodes);
+		}
+		
 	}
 }
