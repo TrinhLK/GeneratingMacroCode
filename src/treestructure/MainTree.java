@@ -124,9 +124,11 @@ public class MainTree {
 	public String genMacroCode(String connectorString) {
 		TreeNode root = new TreeNode("root.null", false, null);
 		createTree(root, connectorString, 0);
-
+		System.out.println("----Original----");
+		root.traversal();
+		System.out.println("--------");
 		TreeNode reducedTree = renewTree(root);
-		reducedTree.traversal();
+//		reducedTree.traversal();
 //		return "";
 		return reducedTree.printRequireMacro("") + "\n" + genAcceptsCode(connectorString);
 	}
@@ -189,9 +191,9 @@ public class MainTree {
 		ArrayList<TreeNode> lNodes = tree2List(clone);
 		lNodes = List2Tree(lNodes);
 		lNodes.get(0).addExportedPort();
-		System.out.println("----Original----");
-		lNodes.get(0).traversal();
-		System.out.println("--------");
+//		System.out.println("----Original----");
+//		lNodes.get(0).traversal();
+//		System.out.println("--------");
 		updateExportList(lNodes.get(0));
 		return lNodes.get(0);
 	}

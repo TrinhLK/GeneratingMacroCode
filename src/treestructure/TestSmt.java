@@ -1,6 +1,7 @@
 package treestructure;
 
 import java.util.ArrayList;
+import java.util.StringJoiner;
 
 public class TestSmt {
 
@@ -24,6 +25,14 @@ public class TestSmt {
 		input.add(f_str);
 		input.add(s_str);
 		input.add(t_str);
+		
+		StringJoiner joiner = new StringJoiner(",");
+		for (String item : s_str) {
+		    joiner.add(item.toString());
+		}
+		System.out.println(joiner.toString());
+//		return joiner.toString();
+		
 		tst.generatePermutations(input, result, 0, "");
 		System.out.println(result);
 	}
@@ -36,6 +45,17 @@ public class TestSmt {
 
 	    for (int i = 0; i < input.get(depth).size(); i++) {
 	        generatePermutations(input, result, depth + 1, current + input.get(depth).get(i) + "-");
+	    }
+	}
+	
+	void generatePermutations1(ArrayList<ArrayList<ArrayList<String>>> input, ArrayList<String> result, int depth, String current) {
+	    if (depth == input.size()) {
+	        result.add(current);
+	        return;
+	    }
+
+	    for (int i = 0; i < input.get(depth).size(); i++) {
+	        generatePermutations1(input, result, depth + 1, current + input.get(depth).get(i) + "-");
 	    }
 	}
 }
