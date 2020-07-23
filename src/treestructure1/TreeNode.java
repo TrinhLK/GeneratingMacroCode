@@ -10,7 +10,6 @@ public class TreeNode {
 	private String componentTypeName; // e.g. Tomcat
 	private String portTypeName; // e.g. start
 	private boolean trigger; // trigger or sync
-	private boolean canRemove;	//can be removed
 	private ArrayList<ArrayList<TreeNode>> export; // null means the node is a leaf, i.e. a port
 	private ArrayList<TreeNode> children; // null means the node is a leaf, i.e. a port
 	
@@ -19,7 +18,6 @@ public class TreeNode {
 		setNameAndAction(_content);
 		trigger = _trigger;
 		parent = _parent;
-		canRemove = false;
 		children = new ArrayList<TreeNode>();
 		export = new ArrayList<ArrayList<TreeNode>>();
 	}
@@ -28,7 +26,6 @@ public class TreeNode {
 		content = removeBrackets(_content);
 		setNameAndAction(_content);
 		trigger = _trigger;
-		canRemove = false;
 		children = new ArrayList<TreeNode>();
 	}
 	
@@ -38,7 +35,6 @@ public class TreeNode {
 	 * */
 	public String genRequiresCode(String result) {
 		
-		
 		if (getChildren().size() > 0) {
 			ArrayList<TreeNode> listSynchs = getListSynchron(children);
 			ArrayList<TreeNode> listTriggers = getListTriggers(children);
@@ -47,18 +43,15 @@ public class TreeNode {
 			result += generateRequiresBroadcastConnector(listSynchs, listTriggers);
 			
 			if (listTriggers.size() == 0) {
-//				result += "//REN2: " + listSynchs + "\n";
-//				result += generateRequiresRendezvous(listSynchs);
 				if ((parent != null && parent.allChildrenAreSync()) || parent == null) {
+					//!(This is compound and export list doesn't contain trigger)
+					//Condition to dont generate redundant codes
 					if (!(this.isCompound() && !this.getExport().get(0).get(0).isTrigger())) {
 						result += "//REN2: " + listSynchs + "\n";
 						result += generateRequiresRendezvous(listSynchs);
 					}
-					
 				}
-				
-//				if (parent == null)
-			}	//BROADCAST
+			}
 			else {
 				for (TreeNode trig : listTriggers) {
 					if (trig.isCompound() && trig.getExport().size()==1) {
@@ -152,16 +145,18 @@ public class TreeNode {
 					result += "//3rd case: trig compound, synch is not";
 					result += "//" + triggers.getExport() + "`-" + synch + "\n";
 //					String tempTrig = "";
-					StringJoiner joiner = new StringJoiner(", ");
+//					StringJoiner joiner = new StringJoiner(", ");
 					for (int i=0 ; i<triggers.getExport().size() ; i++) {
 						ArrayList<TreeNode> exportI = triggers.getExport().get(i);
+						StringJoiner joiner = new StringJoiner(", ");
 						for (TreeNode exportIelem : exportI) {
 							String temp = exportIelem.getComponentTypeName() + "Connector.class, \"" + exportIelem.getPortTypeName() + "\"";
 							joiner.add(temp);
 						}
+						result += "\t\tport(" + synch.getComponentTypeName() + "Connector.class, \"" + synch.getPortTypeName() + "\")"
+								+ ".requires(" + joiner.toString() + ");\n";
 					}
-					result += "\t\tport(" + synch.getComponentTypeName() + "Connector.class, \"" + synch.getPortTypeName() + "\")"
-							+ ".requires(" + joiner.toString() + ");\n";
+					
 				}
 				
 				/**
@@ -211,84 +206,52 @@ public class TreeNode {
 		ArrayList<String> listConnectors = genArrayListOfRendez(listSynch);
 		
 		for (String connector : listConnectors) {
-//			System.out.println(convertRendezStringToTreeNode(connector));
-			ArrayList<ArrayList<TreeNode>> aTreeNodeList = convertRendezStringToTreeNode(connector);
-//			System.out.println(aTreeNodeList);
-			result += generateOneRendezvousConnector(aTreeNodeList);
+			ArrayList<TreeNode> aTreeNodeList = convertRendezStringToTreeNode1(connector);
+			result += generateOneRendezvousConnector1(aTreeNodeList);
 		}
 		return result;
 	}
 	
-	public String generateOneRendezvousConnector(ArrayList<ArrayList<TreeNode>> input) {
+	public String generateOneRendezvousConnector1(ArrayList<TreeNode> input) {
 		String result = "";
-		for (ArrayList<TreeNode> portI : input) {
-//			String effect = "";
-			for (TreeNode portIelem : portI) {
-				String effect = "\t\tport(" + portIelem.getComponentTypeName() + "Connector.class, \"" + portIelem.getPortTypeName() + "\")"
-						+ ".requires(";
-				String causes = "";
-				StringJoiner joiner = new StringJoiner(", ");
-				for (ArrayList<TreeNode> portJ : input) {
-					if (portI != portJ) {
-						
-						for (TreeNode portJelem : portJ) {
-							String cause = portJelem.getComponentTypeName() + "Connector.class, \"" + portJelem.getPortTypeName() + "\"";
-							joiner.add(cause);
-						}
-					}
+		for (TreeNode portI : input) {
+			String effect = "\t\tport(" + portI.getComponentTypeName() + "Connector.class, \"" + portI.getPortTypeName() + "\")"
+					+ ".requires(";
+			StringJoiner joiner = new StringJoiner(", ");
+			for (TreeNode portJ : input) {
+				if (portI != portJ) {
+					String cause = portJ.getComponentTypeName() + "Connector.class, \"" + portJ.getPortTypeName() + "\"";
+					joiner.add(cause);
 				}
-				causes += joiner.toString();
-				result += effect + causes + ");\n";
-//				System.out.println("TEST rend: " + result);
 			}
-			
+			result += effect + joiner.toString() + ");\n";
 		}
-		return result;
-	}
-	//convert rendezvous string to Tree
-	public ArrayList<ArrayList<TreeNode>> convertRendezStringToTreeNode(ArrayList<String> input) {
-		ArrayList<ArrayList<TreeNode>> result = new ArrayList<ArrayList<TreeNode>>();
-		for (String aRendez : input) {
-			String[] elems = aRendez.split("-");
-			ArrayList<TreeNode> tempResult = new ArrayList<TreeNode>();
-			for (String elem : elems) {
-				TreeNode temp = findTreeNodeFromContent(elem);
-				if (temp != null)
-					tempResult.add(temp);
-			}
-//			System.out.println(tempResult);
-			result.add(tempResult);
-		}
-//		System.out.println(result);
 		return result;
 	}
 	
 	//convert rendezvous string to Tree
-	public ArrayList<ArrayList<TreeNode>> convertRendezStringToTreeNode(String input) {
-		ArrayList<ArrayList<TreeNode>> result = new ArrayList<ArrayList<TreeNode>>();
-//		for (String aRendez : input) {
-//		System.out.println(input);
+	public ArrayList<TreeNode> convertRendezStringToTreeNode1(String input) {
+		ArrayList<TreeNode> result1 = new ArrayList<TreeNode>();
 		String[] elems = input.split("-");
 		for (String elem : elems) {
-			ArrayList<TreeNode> tempResult = new ArrayList<TreeNode>();
-//			System.out.println("elem: " + elem);
 			if (elem.contains("~")) {
 				String[] sub_elem = elem.split("~");
-//				System.out.println("sub elem: " + sub_elem);
 				for (String se : sub_elem) {
 					TreeNode temp = findTreeNodeFromContent(se);
-					if (temp != null)
-						tempResult.add(temp);
+					if (temp != null) {
+						result1.add(temp);
+					}
 				}
 			}else {
 				TreeNode temp = findTreeNodeFromContent(elem);
-				if (temp != null)
-					tempResult.add(temp);
+				if (temp != null) {
+					result1.add(temp);
+				}
+					
 			}
-			result.add(tempResult);
 		}
-
-		return result;
+		System.out.println("RENDEZVOUS connector: " + result1);
+		return result1;
 	}
 	
 	public TreeNode findTreeNodeFromContent(String content){
@@ -350,19 +313,21 @@ public class TreeNode {
 	        generatePermutations(input, result, depth + 1, current + input.get(depth).get(i) + "-");
 	    }
 	}
+	
 	/**
 	 * Add information of export
+	 * ------------------------------------------------------------------------------------
 	 * */
 	public void addExportedPort() {
-		
-		//compound with one or more trigger children
+				
 		for (TreeNode child : children) {
 			child.addExportedPort();
 		}
 		
+		//compound with one or more trigger children
 		if(this.isCompound()) {
-			//all children are synchron
-			ArrayList<TreeNode> considering = new ArrayList<TreeNode>();
+			//get list to check children's kind
+			ArrayList<TreeNode> considering;//
 			
 			//case 1: Compound with no trigger children -> exportedPort = all synch children
 			if (allChildrenAreSync()) {
@@ -373,18 +338,18 @@ public class TreeNode {
 			}
 			
 			if (noCompoundInList(considering)) {
-				if (considering.get(0).isTrigger()) {
+				if (considering.get(0).isTrigger()) {	//{{p1`}, {p2`}}
 					for (TreeNode child : considering) {
 						ArrayList<TreeNode> temp = new ArrayList<TreeNode>();
 						temp.add(child);
 						export.add(temp);
 					}
-				}else {
-					ArrayList<TreeNode> temp = new ArrayList<TreeNode>();
-					for (TreeNode child : considering) {
-						temp.add(child);
-					}
-					export.add(temp);
+				}else { //{{p1,p2}}
+//					ArrayList<TreeNode> temp = new ArrayList<TreeNode>();
+//					for (TreeNode child : considering) {
+//						temp.add(child);
+//					}
+					export.add(considering);
 				}
 			}else {
 				for (TreeNode child : considering) {
@@ -509,6 +474,10 @@ public class TreeNode {
 		}
 		return rs;
 	}
+	
+//	public boolean hasTriggersInList(ArrayList<TreeNode> input) {
+//		for (TreeNode t : )
+//	}
 	/**
 	 * Getters and Setters
 	 * ---------------------------------------------------------------------
@@ -555,14 +524,6 @@ public class TreeNode {
 
 	public void setTrigger(boolean trigger) {
 		this.trigger = trigger;
-	}
-
-	public boolean isCanRemove() {
-		return canRemove;
-	}
-
-	public void setCanRemove(boolean canRemove) {
-		this.canRemove = canRemove;
 	}
 
 	public ArrayList<ArrayList<TreeNode>> getExport() {

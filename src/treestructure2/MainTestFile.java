@@ -1,4 +1,4 @@
-package treestructure1;
+package treestructure2;
 
 import java.util.ArrayList;
 import java.util.Stack;
@@ -107,7 +107,7 @@ public class MainTestFile {
 //		System.out.println("list Leave: " + listLeaves.size() + "\t" + listLeaves);
 //		TreeNode reducedTree = renewTree(root);
 //		reducedTree.traversal();
-//		return "";
+//		return genAcceptsCode(listLeaves);
 		return root.genRequiresCode("") + "\n" + genAcceptsCode(listLeaves);
 	}
 	
