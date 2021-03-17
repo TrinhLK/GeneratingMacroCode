@@ -110,26 +110,4 @@ public class TestSmt {
 		System.out.println(result);
 		return result;
 	}
-	
-	void generatePermutations(ArrayList<ArrayList<String>> input, ArrayList<String> result, int depth, String current) {
-	    if (depth == input.size()) {
-	        result.add(current);
-	        return;
-	    }
-
-	    for (int i = 0; i < input.get(depth).size(); i++) {
-	        generatePermutations(input, result, depth + 1, current + input.get(depth).get(i) + "-");
-	    }
-	}
-	
-	void generatePermutations1(ArrayList<ArrayList<ArrayList<String>>> input, ArrayList<String> result, int depth, String current) {
-	    if (depth == input.size()) {
-	        result.add(current);
-	        return;
-	    }
-
-	    for (int i = 0; i < input.get(depth).size(); i++) {
-	        generatePermutations1(input, result, depth + 1, current + input.get(depth).get(i) + "-");
-	    }
-	}
 }

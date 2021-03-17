@@ -27,6 +27,7 @@ public class MainTree {
 		String connectorString12 = "[(p.1a)`-(p.1b)`-(p.1c)]-(p.2)-[(p.3a)`-[(p.3b)-(p.3c)]`-[(p.3d)-(p.3e)]]"
 				+ "-[(p.3a1)`-[(p.3b1)-(p.3c1)]`-[(p.3d1)-(p.3e1)]]";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
 		String connectorString13 = "[(p.1a)`-(p.1b)`-(p.1c)]-(p.2)-[(p.3a)`-[(p.3b)`-[(p.3c1)-(p.3c2)]`-(p.3e)]`-(p.3d)]";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
+		String connectorString14 = "[[(MySQL.start)-(MySQL.start)]-(MySQL.stop)`]`-(Tomcat.start)";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
 
 		
 		System.out.println("--- String 1: " + connectorString);
@@ -70,6 +71,9 @@ public class MainTree {
 //		
 		System.out.println("--- String 14: " + connectorString13);
 		System.out.println(genMacroCode(connectorString13));
+		
+		System.out.println("--- String 15: " + connectorString14);
+		System.out.println(genMacroCode(connectorString14));
 	}
 	
 //	public String generatingDataTransfer(Annotation annotation) {
