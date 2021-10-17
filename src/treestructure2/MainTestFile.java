@@ -30,7 +30,7 @@ public class MainTestFile {
 		String connectorString14 = "[(p.1a)`-[(p.1b)-(p.1c)]`]`-[(p.3a)`-[(p.3b)-(p.3c)]`-(p.3d)]";
 		String connectorString15 = "[(p.1a)`-(p.1b)`-(p.1c)]-(p.2)-[(p.3a)`-[(p.3b)-(p.3c)]`-(p.3d)]";
 		String connectorString16 = "(MySQL.start)`-[(Tomcat.start)`-(Apache.start)]";
-		String connectorString17 = "[[(MySQL.running)-(MySQL.running)-(Tomcat.running)]-(MySQL.fail)`]`-(Tomcat.start)";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
+		String connectorString17 = "[(MySQL.running)-(MySQL.running)-(Tomcat.running)-(MySQL.fail)]`-(Tomcat.start)";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
 
 		
 		System.out.println("--- String 1: " + connectorString);

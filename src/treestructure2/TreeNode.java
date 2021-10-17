@@ -42,15 +42,12 @@ public class TreeNode {
 				boolean isRedundant = false;
 				if (parent != null) {
 					if (parent.allChildrenAreSync()) {
-//						System.out.println("Shouldn't generate Rendezvous 1: " + this);
 						isRedundant = true;
 					}else {
 						if (!this.isTrigger()) {
-//							System.out.println("Shouldn't generate Rendezvous 2: " + this);
 							isRedundant = true;
 						}else {
 							isRedundant = shouldBeDisappear(this, parent);
-//							System.out.println("Shouldn't generate Rendezvous 3: " + this + "\t" + isRedundant);
 						}
 					}
 				}
@@ -231,10 +228,10 @@ public class TreeNode {
 	public void traversal() {
 		String rs = "";
 		if (parent != null) {
-			rs += content + "\t (trig? " + isTrigger() + ")\t parent:" + parent.getContent();
+			rs += content + "\t (" + (isTrigger()?"trig":"sync") + ")\t parent:" + parent.getContent();
 			rs += "\t export: " + this.getExport();
 		}else {
-			rs += content + "\t (trig? " + isTrigger();
+			rs += content + "\t (" + (isTrigger()?"trig":"sync");
 			rs += ")\t export: " + this.getExport();// + "\t children: " + this.getChildren();
 		}
 		System.out.println(rs);
