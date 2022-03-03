@@ -47,7 +47,7 @@ public class TreeNode {
 						if (!this.isTrigger()) {
 							isRedundant = true;
 						}else {
-							isRedundant = shouldBeDisappear(this, parent);
+							isRedundant = shouldBeDisappeared(this, parent);
 						}
 					}
 				}
@@ -57,7 +57,7 @@ public class TreeNode {
 				}
 			}else {
 				result += "//Synchron & Trigger\n";
-				result += generateRequiresBroadcastConnector(listSynchs, listTriggers);
+				result += generateSync2TrigRequiresCode(listSynchs, listTriggers);
 			}
 		}
 		
@@ -70,7 +70,7 @@ public class TreeNode {
 	 * generate requires Macro code for BROADCAST connector 
 	 * ------------------------------------------------------------------------------------
 	 * */
-	public String generateRequiresBroadcastConnector(ArrayList<TreeNode> listSynch, ArrayList<TreeNode> listTriggers) {
+	public String generateSync2TrigRequiresCode(ArrayList<TreeNode> listSynch, ArrayList<TreeNode> listTriggers) {
 		String result = "";
 		for (TreeNode synch : listSynch) {
 			for (TreeNode trig : listTriggers) {
@@ -150,11 +150,11 @@ public class TreeNode {
 		return result;
 	}
 	
-	public boolean shouldBeDisappear(TreeNode cur, TreeNode parent) {
+	public boolean shouldBeDisappeared(TreeNode cur, TreeNode parent) {
 		if (!parent.getContent().contains("root")) {
 			if (parent.getExport().containsAll(cur.getExport())) {
 				if (parent.isTrigger()) {
-					return shouldBeDisappear(cur, parent.getParent());
+					return shouldBeDisappeared(cur, parent.getParent());
 				}else {
 					return true;
 				}
@@ -220,9 +220,13 @@ public class TreeNode {
 	}
 	
 	public void setNameAndAction(String _content) {
+//		System.out.println("Check set Name and Action: " + _content);
+//		if (!_content.equals("")) {
 		String[] sp = _content.replaceAll("`|\\*|\\)|\\(", "").split("\\.");
 		componentTypeName = sp[0];
 		portTypeName = sp[1];
+//		}
+		
 	}
 	
 	public void traversal() {
@@ -234,7 +238,7 @@ public class TreeNode {
 			rs += content + "\t (" + (isTrigger()?"trig":"sync");
 			rs += ")\t export: " + this.getExport();// + "\t children: " + this.getChildren();
 		}
-		System.out.println(rs);
+//		System.out.println(rs);
 		for (TreeNode leaf : children) {
 			leaf.traversal();
 		}

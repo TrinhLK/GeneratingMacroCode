@@ -10,7 +10,8 @@ public class MainTestFile {
 //		String connectorString = "[(p.1)`-(p.2)]`-(p.3)-[(p.4)`-[(p.5)`-(p.6)]]";
 //		String connectorString1 = "[(p.1)`-(p.2)]-(p.3)-[(p.4)-[(p.5)-(p.6)]]";
 //		String connectorString2 = "[(p.1)-(p.2)]-(p.3)-[(p.4)-(p.5)]";
-		String connectorString = "[(p.1)-(p.2)]-(p.3)`-[(p.4)-(p.5)]";
+//		String connectorString = "[(p.1)-(p.2)]-(p.3)`-[(p.4)-(p.5)]";
+		String connectorString = "[(p.1)-(p.1)]`-(p.3)";
 		String connectorString1 = "[(p.1)-(p.2)]-[(p.3)-(p.4)]";
 		String connectorString21 = "(p.1)-(p.2)-(p.3)-(p.4)";
 		String connectorString22 = "[(p.1)-(p.2)]-(p.3)-(p.4)";
@@ -30,7 +31,10 @@ public class MainTestFile {
 		String connectorString14 = "[(p.1a)`-[(p.1b)-(p.1c)]`]`-[(p.3a)`-[(p.3b)-(p.3c)]`-(p.3d)]";
 		String connectorString15 = "[(p.1a)`-(p.1b)`-(p.1c)]-(p.2)-[(p.3a)`-[(p.3b)-(p.3c)]`-(p.3d)]";
 		String connectorString16 = "(MySQL.start)`-[(Tomcat.start)`-(Apache.start)]";
-		String connectorString17 = "[(MySQL.running)-(MySQL.running)-(Tomcat.running)-(MySQL.fail)]`-(Tomcat.start)";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
+		String connectorString17 = "[(MySQL.running)-(MySQL.stop)-(Tomcat.running)-(MySQL.fail)]`-(Tomcat.start)";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
+		String connectorString18 = "(Route.on)-(Monitor.add)";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
+		String connectorString19 = "[(HerokuClearDBMySQL.on)-(HerokuPostgres.on)-(HerokuScoutAPM.on)-(HerokuNewRelicAPM.on)-(Deployer.setAddonsForUS)]`-(HerokuRegion.setAddonsForUS)";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
+		String connectorString20 = "[(HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.on) - (HerokuNewRelicAPM.on) - (Deployer.setAddonsForEU)]` - (HerokuRegion.setAddonsForEU)";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
 
 		
 		System.out.println("--- String 1: " + connectorString);
@@ -92,11 +96,294 @@ public class MainTestFile {
 		
 		System.out.println("--- String 18: " + connectorString17);
 		System.out.println(genMacroCode(connectorString17));
+		
+		System.out.println("--- String 18r: " + connectorString18);
+		System.out.println(genMacroCode(connectorString18));
+		
+		System.out.println("--- String 19: " + connectorString19);
+		System.out.println(genMacroCode(connectorString19));
+		
+		System.out.println("--- String 20: " + connectorString20);
+		System.out.println(genMacroCode(connectorString20));
 	}
 	
+	public void herokuListCoordination() {
+		String herokuList[] = {
+			"(HerokuDynoType.sub1) - (Deployer.setFreeDyno)",
+			"(HerokuDynoType.sendDynoResponse) - (Deployer.receiveDynoResponse)",
+			"(HerokuRegion.toUS) - (Deployer.setUSRegion)",
+			"(HerokuRegion.toEU) - (Deployer.setEURegion)",
+			"HerokuRegion.setAddonsForEU)` - (HerokuRegion.setAddonsForUS)` - (HerokuPostgres.on) - (HerokuClearDBMySQL.on) - (HerokuScoutAPM.on) - (HerokuNewRelicAPM.on)",
+			"[(HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.on) - (HerokuNewRelicAPM.on) - (Deployer.setAddonsForUS)]` - (HerokuRegion.setAddonsForUS)",
+			"[(HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.on) - (HerokuNewRelicAPM.on) - (Deployer.setAddonsForEU)]` - (HerokuRegion.setAddonsForEU)",
+			"(HerokuRegion.setAddonsForUS)` - (Deployer.setAddonsForUS)",
+			"(HerokuRegion.setAddonsForEU)` - (Deployer.setAddonsForEU)",
+			
+			"(Deployer.setJava) - (HerokuBuildpack.setJava)",
+			"(Deployer.setScala) - (HerokuBuildpack.setScala)",
+			"(Deployer.setPython) - (HerokuBuildpack.setPython)",
+			"(Deployer.setRuby) - (HerokuBuildpack.setRuby)",
+			"(Deployer.setNodejs) - (HerokuBuildpack.setNodejs)",
+			"(Deployer.setClojure) - (HerokuBuildpack.setClojure)",
+			"(Deployer.setGradle) - (HerokuBuildpack.setGradle)",
+			"(Deployer.setJvm) - (HerokuBuildpack.setJvm)",
+			"(Deployer.setPhp) - (HerokuBuildpack.setPhp)",
+			"(Deployer.setGo) - (HerokuBuildpack.setGo)",
+			//210 -- Postgres doesn't support Gradle
+			"(HerokuBuildpack.setAddonsForJava)` - (HerokuPostgres.on)",
+			"(HerokuBuildpack.setAddonsForScala)` - (HerokuPostgres.on)",
+			"(HerokuBuildpack.setAddonsForPython)` - (HerokuPostgres.on)",
+			"(HerokuBuildpack.setAddonsForRuby)` - (HerokuPostgres.on)",
+			"(HerokuBuildpack.setAddonsForNodejs)` - (HerokuPostgres.on)",
+			"(HerokuBuildpack.setAddonsForClojure)` - (HerokuPostgres.on)",
+			"(HerokuBuildpack.setAddonsForGradle)` - (HerokuPostgres.off)",
+			"(HerokuBuildpack.setAddonsForJvm)` - (HerokuPostgres.on)",
+			"(HerokuBuildpack.setAddonsForPhp)` - (HerokuPostgres.on)",
+			"(HerokuBuildpack.setAddonsForGo)` - (HerokuPostgres.on)",
+			
+			//221 -- ClearDB doesn't support Gradle
+			"(HerokuBuildpack.setAddonsForJava)` - (HerokuClearDBMySQL.on)",
+			"(HerokuBuildpack.setAddonsForScala)` - (HerokuClearDBMySQL.on)",
+			"(HerokuBuildpack.setAddonsForPython)` - (HerokuClearDBMySQL.on)",
+			"(HerokuBuildpack.setAddonsForRuby)` - (HerokuClearDBMySQL.on)",
+			"(HerokuBuildpack.setAddonsForNodejs)` - (HerokuClearDBMySQL.on)",
+			"(HerokuBuildpack.setAddonsForClojure)` - (HerokuClearDBMySQL.on)",
+			"(HerokuBuildpack.setAddonsForGradle)` - (HerokuClearDBMySQL.off)",
+			"(HerokuBuildpack.setAddonsForJvm)` - (HerokuClearDBMySQL.on)",
+			"(HerokuBuildpack.setAddonsForPhp)` - (HerokuClearDBMySQL.on)",
+			"(HerokuBuildpack.setAddonsForGo)` - (HerokuClearDBMySQL.on)",
+			
+			//232 -- ScoutAPM doesn't support Java, Scala, NodeJS, Clojure, Gradle, Jvm, Go
+			"(HerokuBuildpack.setAddonsForJava)` - (HerokuScoutAPM.off)",
+			"(HerokuBuildpack.setAddonsForScala)` - (HerokuScoutAPM.off)",
+			"(HerokuBuildpack.setAddonsForPython)` - (HerokuScoutAPM.on)",
+			"(HerokuBuildpack.setAddonsForRuby)` - (HerokuScoutAPM.on)",
+			"(HerokuBuildpack.setAddonsForNodejs)` - (HerokuScoutAPM.off)",
+			"(HerokuBuildpack.setAddonsForClojure)` - (HerokuScoutAPM.off)",
+			"(HerokuBuildpack.setAddonsForGradle)` - (HerokuScoutAPM.off)",
+			"(HerokuBuildpack.setAddonsForJvm)` - (HerokuScoutAPM.off)",
+			"(HerokuBuildpack.setAddonsForPhp)` - (HerokuScoutAPM.on)",
+			"(HerokuBuildpack.setAddonsForGo)` - (HerokuScoutAPM.off)",
+			
+			//243 -- NewRelicAPM doesn't support Scala, Clojure, Gradle, Go
+			"(HerokuBuildpack.setAddonsForJava)` - (HerokuNewRelicAPM.on)",
+			"(HerokuBuildpack.setAddonsForScala)` - (HerokuNewRelicAPM.off)",
+			"(HerokuBuildpack.setAddonsForPython)` - (HerokuNewRelicAPM.on)",
+			"(HerokuBuildpack.setAddonsForRuby)` - (HerokuNewRelicAPM.on)",
+			"(HerokuBuildpack.setAddonsForNodejs)` - (HerokuNewRelicAPM.on)",
+			"(HerokuBuildpack.setAddonsForClojure)` - (HerokuNewRelicAPM.off)",
+			"(HerokuBuildpack.setAddonsForGradle)` - (HerokuNewRelicAPM.off)",
+			"(HerokuBuildpack.setAddonsForJvm)` - (HerokuNewRelicAPM.on)",
+			"(HerokuBuildpack.setAddonsForPhp)` - (HerokuNewRelicAPM.on)",
+			"(HerokuBuildpack.setAddonsForGo)` - (HerokuNewRelicAPM.off)",
+			
+			//403 -- 
+			"[(Deployer.setAddonsForJava) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForJava)",
+			"[(Deployer.setAddonsForScala) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForScala)",
+			"[(Deployer.setAddonsForPython) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForPython)",
+			"[(Deployer.setAddonsForRuby) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForRuby)",
+			"[(Deployer.setAddonsForNodejs) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForNodejs)",
+			"[(Deployer.setAddonsForClojure) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForClojure)",
+			"[(Deployer.setAddonsForGradle) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForGradle)",
+			"[(Deployer.setAddonsForJvm) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForJvm)",
+			"[(Deployer.setAddonsForPhp) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForPhp)",
+			"[(Deployer.setAddonsForGo) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForGo)",
+
+			//543 --  set supported addons for each Language
+			"(HerokuBuildpack.setAddonsForJava)` - (Deployer.setAddonsForJava)",
+			"(HerokuBuildpack.setAddonsForScala)` - (Deployer.setAddonsForScala)",
+			"(HerokuBuildpack.setAddonsForPython)` - (Deployer.setAddonsForPython)",
+			"(HerokuBuildpack.setAddonsForRuby)` - (Deployer.setAddonsForRuby)",
+			"(HerokuBuildpack.setAddonsForNodejs)` - (Deployer.setAddonsForNodejs)",
+			"(HerokuBuildpack.setAddonsForClojure)` - (Deployer.setAddonsForClojure)",
+			"(HerokuBuildpack.setAddonsForGradle)` - (Deployer.setAddonsForGradle)",
+			"(HerokuBuildpack.setAddonsForJvm)` - (Deployer.setAddonsForJvm)",
+			"(HerokuBuildpack.setAddonsForPhp)` - (Deployer.setAddonsForPhp)",
+			"(HerokuBuildpack.setAddonsForGo)` - (Deployer.setAddonsForGo)",
+
+			// 665 Deployer add addons
+			"(HerokuPostgres.sendAddonResponse)` - (Deployer.receiveAddonResponse)",
+			"(Deployer.addHerokuPostgres1)` - (HerokuPostgres.sub1)",
+			"(Deployer.addHerokuPostgres2)` - (HerokuPostgres.sub2)",
+			"(Deployer.addClearDBMySQL1)` - (HerokuClearDBMySQL.sub1)",
+			"(Deployer.addScoutAPM1)` - (HerokuScoutAPM.sub1)",
+			"(Deployer.addNewRelicAPM1)` - (HerokuNewRelicAPM.sub1)",
+			
+			//705 Reset setup
+			"(Deployer.resetAll)` - (HerokuDynoType.reset1)",
+			"(Deployer.resetAll)` - (HerokuRegion.USreset)",
+			"(Deployer.resetAll)` - (HerokuRegion.EUreset)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removeJava)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removeScala)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removeJvm)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removePython)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removeRuby)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removeNodejs)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removeClojure)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removeGradle)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removePhp)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removeGo)",
+			
+			//721 
+			"(Deployer.resetAll)` - (HerokuPostgres.off)",
+			"(Deployer.resetAll)` - (HerokuPostgres.reset1)",
+			"(Deployer.resetAll)` - (HerokuPostgres.reset2)",
+			
+			"(Deployer.resetAll)` - (HerokuClearDBMySQL.off)",
+			"(Deployer.resetAll)` - (HerokuClearDBMySQL.reset1)",
+			
+			"(Deployer.resetAll)` - (HerokuScoutAPM.off)",
+			"(Deployer.resetAll)` - (HerokuScoutAPM.reset1)",
+			
+			"(Deployer.resetAll)` - (HerokuNewRelicAPM.off)",
+			"(Deployer.resetAll)` - (HerokuNewRelicAPM.reset1)"
+		};
+		System.out.println("Heroku list's length: " + herokuList.length);
+		for (int i=0 ; i<herokuList.length ; i++) {
+			System.out.println("// connector_" + (i+1) + ":" + herokuList[i]);
+			System.out.println(genMacroCode(herokuList[i]));
+		}
+	}
+	
+	public void herokuListCoordination1() {
+		String herokuList[] = {
+			"(HerokuDynoType.sub1) - (Deployer.setFreeDyno)",
+			"(HerokuDynoType.sendDynoResponse) - (Deployer.receiveDynoResponse)",
+			"(HerokuRegion.toUS) - (Deployer.setUSRegion)",
+			"(HerokuRegion.toEU) - (Deployer.setEURegion)",
+			"HerokuRegion.setAddonsForEU)` - (HerokuRegion.setAddonsForUS)` - (HerokuPostgres.on) - (HerokuClearDBMySQL.on) - (HerokuScoutAPM.on) - (HerokuNewRelicAPM.on)",
+			"[(HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.on) - (HerokuNewRelicAPM.on) - (Deployer.setAddonsForUS)]` - (HerokuRegion.setAddonsForUS)",
+			"[(HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.on) - (HerokuNewRelicAPM.on) - (Deployer.setAddonsForEU)]` - (HerokuRegion.setAddonsForEU)",
+			"(HerokuRegion.setAddonsForUS)` - (Deployer.setAddonsForUS)",
+			"(HerokuRegion.setAddonsForEU)` - (Deployer.setAddonsForEU)",
+			
+			"(Deployer.setJava) - (HerokuBuildpack.setJava)",
+			"(Deployer.setScala) - (HerokuBuildpack.setScala)",
+			"(Deployer.setPython) - (HerokuBuildpack.setPython)",
+			"(Deployer.setRuby) - (HerokuBuildpack.setRuby)",
+			"(Deployer.setNodejs) - (HerokuBuildpack.setNodejs)",
+			"(Deployer.setClojure) - (HerokuBuildpack.setClojure)",
+			"(Deployer.setGradle) - (HerokuBuildpack.setGradle)",
+			"(Deployer.setJvm) - (HerokuBuildpack.setJvm)",
+			"(Deployer.setPhp) - (HerokuBuildpack.setPhp)",
+			"(Deployer.setGo) - (HerokuBuildpack.setGo)",
+			//210 -- Postgres doesn't support Gradle
+			"(HerokuBuildpack.setAddonsForJava)` - (HerokuPostgres.on)",
+			"(HerokuBuildpack.setAddonsForScala)` - (HerokuPostgres.on)",
+			"(HerokuBuildpack.setAddonsForPython)` - (HerokuPostgres.on)",
+			"(HerokuBuildpack.setAddonsForRuby)` - (HerokuPostgres.on)",
+			"(HerokuBuildpack.setAddonsForNodejs)` - (HerokuPostgres.on)",
+			"(HerokuBuildpack.setAddonsForClojure)` - (HerokuPostgres.on)",
+			"(HerokuBuildpack.setAddonsForGradle)` - (HerokuPostgres.off)",
+			"(HerokuBuildpack.setAddonsForJvm)` - (HerokuPostgres.on)",
+			"(HerokuBuildpack.setAddonsForPhp)` - (HerokuPostgres.on)",
+			"(HerokuBuildpack.setAddonsForGo)` - (HerokuPostgres.on)",
+			
+			//221 -- ClearDB doesn't support Gradle
+			"(HerokuBuildpack.setAddonsForJava)` - (HerokuClearDBMySQL.on)",
+			"(HerokuBuildpack.setAddonsForScala)` - (HerokuClearDBMySQL.on)",
+			"(HerokuBuildpack.setAddonsForPython)` - (HerokuClearDBMySQL.on)",
+			"(HerokuBuildpack.setAddonsForRuby)` - (HerokuClearDBMySQL.on)",
+			"(HerokuBuildpack.setAddonsForNodejs)` - (HerokuClearDBMySQL.on)",
+			"(HerokuBuildpack.setAddonsForClojure)` - (HerokuClearDBMySQL.on)",
+			"(HerokuBuildpack.setAddonsForGradle)` - (HerokuClearDBMySQL.off)",
+			"(HerokuBuildpack.setAddonsForJvm)` - (HerokuClearDBMySQL.on)",
+			"(HerokuBuildpack.setAddonsForPhp)` - (HerokuClearDBMySQL.on)",
+			"(HerokuBuildpack.setAddonsForGo)` - (HerokuClearDBMySQL.on)",
+			
+			//232 -- ScoutAPM doesn't support Java, Scala, NodeJS, Clojure, Gradle, Jvm, Go
+			"(HerokuBuildpack.setAddonsForJava)` - (HerokuScoutAPM.off)",
+			"(HerokuBuildpack.setAddonsForScala)` - (HerokuScoutAPM.off)",
+			"(HerokuBuildpack.setAddonsForPython)` - (HerokuScoutAPM.on)",
+			"(HerokuBuildpack.setAddonsForRuby)` - (HerokuScoutAPM.on)",
+			"(HerokuBuildpack.setAddonsForNodejs)` - (HerokuScoutAPM.off)",
+			"(HerokuBuildpack.setAddonsForClojure)` - (HerokuScoutAPM.off)",
+			"(HerokuBuildpack.setAddonsForGradle)` - (HerokuScoutAPM.off)",
+			"(HerokuBuildpack.setAddonsForJvm)` - (HerokuScoutAPM.off)",
+			"(HerokuBuildpack.setAddonsForPhp)` - (HerokuScoutAPM.on)",
+			"(HerokuBuildpack.setAddonsForGo)` - (HerokuScoutAPM.off)",
+			
+			//243 -- NewRelicAPM doesn't support Scala, Clojure, Gradle, Go
+			"(HerokuBuildpack.setAddonsForJava)` - (HerokuNewRelicAPM.on)",
+			"(HerokuBuildpack.setAddonsForScala)` - (HerokuNewRelicAPM.off)",
+			"(HerokuBuildpack.setAddonsForPython)` - (HerokuNewRelicAPM.on)",
+			"(HerokuBuildpack.setAddonsForRuby)` - (HerokuNewRelicAPM.on)",
+			"(HerokuBuildpack.setAddonsForNodejs)` - (HerokuNewRelicAPM.on)",
+			"(HerokuBuildpack.setAddonsForClojure)` - (HerokuNewRelicAPM.off)",
+			"(HerokuBuildpack.setAddonsForGradle)` - (HerokuNewRelicAPM.off)",
+			"(HerokuBuildpack.setAddonsForJvm)` - (HerokuNewRelicAPM.on)",
+			"(HerokuBuildpack.setAddonsForPhp)` - (HerokuNewRelicAPM.on)",
+			"(HerokuBuildpack.setAddonsForGo)` - (HerokuNewRelicAPM.off)",
+			
+			//403 -- 
+			"[(Deployer.setAddonsForJava) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForJava)",
+			"[(Deployer.setAddonsForScala) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForScala)",
+			"[(Deployer.setAddonsForPython) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForPython)",
+			"[(Deployer.setAddonsForRuby) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForRuby)",
+			"[(Deployer.setAddonsForNodejs) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForNodejs)",
+			"[(Deployer.setAddonsForClojure) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForClojure)",
+			"[(Deployer.setAddonsForGradle) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForGradle)",
+			"[(Deployer.setAddonsForJvm) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForJvm)",
+			"[(Deployer.setAddonsForPhp) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForPhp)",
+			"[(Deployer.setAddonsForGo) - (HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.off) - (HerokuNewRelicAPM.on)]` - (HerokuBuildpack.setAddonsForGo)",
+
+			//543 --  set supported addons for each Language
+			"(HerokuBuildpack.setAddonsForJava)` - (Deployer.setAddonsForJava)",
+			"(HerokuBuildpack.setAddonsForScala)` - (Deployer.setAddonsForScala)",
+			"(HerokuBuildpack.setAddonsForPython)` - (Deployer.setAddonsForPython)",
+			"(HerokuBuildpack.setAddonsForRuby)` - (Deployer.setAddonsForRuby)",
+			"(HerokuBuildpack.setAddonsForNodejs)` - (Deployer.setAddonsForNodejs)",
+			"(HerokuBuildpack.setAddonsForClojure)` - (Deployer.setAddonsForClojure)",
+			"(HerokuBuildpack.setAddonsForGradle)` - (Deployer.setAddonsForGradle)",
+			"(HerokuBuildpack.setAddonsForJvm)` - (Deployer.setAddonsForJvm)",
+			"(HerokuBuildpack.setAddonsForPhp)` - (Deployer.setAddonsForPhp)",
+			"(HerokuBuildpack.setAddonsForGo)` - (Deployer.setAddonsForGo)",
+
+			// 665 Deployer add addons
+			"(HerokuPostgres.sendAddonResponse)` - (Deployer.receiveAddonResponse)",
+			"(Deployer.addHerokuPostgres)` - (HerokuPostgres.sub1)",
+			"(Deployer.addClearDBMySQL)` - (HerokuClearDBMySQL.sub1)",
+			"(Deployer.addScoutAPM)` - (HerokuScoutAPM.sub1)",
+			"(Deployer.addNewRelicAPM)` - (HerokuNewRelicAPM.sub1)",
+			
+			//705 Reset setup
+			"(Deployer.resetAll)` - (HerokuDynoType.reset)",
+			"(Deployer.resetAll)` - (HerokuRegion.USreset)",
+			"(Deployer.resetAll)` - (HerokuRegion.EUreset)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removeJava)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removeScala)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removeJvm)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removePython)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removeRuby)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removeNodejs)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removeClojure)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removeGradle)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removePhp)",
+			"(Deployer.resetAll)` - (HerokuBuildpack.removeGo)",
+			
+			//721 
+			"(Deployer.resetAll)` - (HerokuPostgres.off)",
+			"(Deployer.resetAll)` - (HerokuPostgres.reset)",
+			
+			"(Deployer.resetAll)` - (HerokuClearDBMySQL.off)",
+			"(Deployer.resetAll)` - (HerokuClearDBMySQL.reset)",
+			
+			"(Deployer.resetAll)` - (HerokuScoutAPM.off)",
+			"(Deployer.resetAll)` - (HerokuScoutAPM.reset)",
+			
+			"(Deployer.resetAll)` - (HerokuNewRelicAPM.off)",
+			"(Deployer.resetAll)` - (HerokuNewRelicAPM.reset)"
+		};
+		System.out.println("Heroku list's length: " + herokuList.length);
+		for (int i=0 ; i<herokuList.length ; i++) {
+			System.out.println("// connector_" + (i+1) + ":" + herokuList[i]);
+			System.out.println(genMacroCode(herokuList[i]));
+		}
+	}
 	public static void main(String[] args) {
 		MainTestFile testMT = new MainTestFile();
-		testMT.test();
+//		testMT.test();
+		testMT.herokuListCoordination1();
 	}
 	
 	/**
@@ -107,9 +394,9 @@ public class MainTestFile {
 		
 		createTree(root, connectorString, 0);
 		root.addExportedPort();
-		System.out.println("----Added Export list----");
+//		System.out.println("----Added Export list----");
 		root.traversal();
-		System.out.println("--------");
+//		System.out.println("--------");
 		//--- Gen Accepts code
 		ArrayList<TreeNode> listLeaves = new ArrayList<TreeNode>();
 		tree2List(root, listLeaves);
@@ -159,8 +446,11 @@ public class MainTestFile {
 					isTrigger = true;
 				}
 				
-				TreeNode elem = new TreeNode(content, isTrigger, root);
-				root.getChildren().add(elem);
+				if (!content.equals("")) {
+					TreeNode elem = new TreeNode(content, isTrigger, root);
+					root.getChildren().add(elem);
+				}
+				
 			}
 			return ;
 		} else {
