@@ -3,6 +3,7 @@ package treestructure2;
 import java.util.ArrayList;
 import java.util.Stack;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 public class MainTestFile {
 
@@ -35,7 +36,9 @@ public class MainTestFile {
 		String connectorString18 = "(Route.on)-(Monitor.add)";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
 		String connectorString19 = "[(HerokuClearDBMySQL.on)-(HerokuPostgres.on)-(HerokuScoutAPM.on)-(HerokuNewRelicAPM.on)-(Deployer.setAddonsForUS)]`-(HerokuRegion.setAddonsForUS)";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
 		String connectorString20 = "[(HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.on) - (HerokuNewRelicAPM.on) - (Deployer.setAddonsForEU)]` - (HerokuRegion.setAddonsForEU)";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
-
+		String connectorString211 = "(Tracker.broadcast)`-[(Peer.listen)`-[(Peer.listen)-(Peer.listen)]`]" ;
+		String connectorString212 = "(Tracker.broadcast)`-[(Peer.listen)-(Peer.listen)]-(Peer.listen)-(Peer.speak)" ;
+		
 		
 		System.out.println("--- String 1: " + connectorString);
 		System.out.println(genMacroCode(connectorString));
@@ -105,6 +108,12 @@ public class MainTestFile {
 		
 		System.out.println("--- String 20: " + connectorString20);
 		System.out.println(genMacroCode(connectorString20));
+		
+		System.out.println("--- String 211: " + connectorString211);
+		System.out.println(genMacroCode(connectorString211));
+		
+		System.out.println("--- String 212: " + connectorString212);
+		System.out.println(genMacroCode(connectorString212));
 	}
 	
 	public void herokuListCoordination() {
@@ -382,8 +391,8 @@ public class MainTestFile {
 	}
 	public static void main(String[] args) {
 		MainTestFile testMT = new MainTestFile();
-//		testMT.test();
-		testMT.herokuListCoordination1();
+		testMT.test();
+//		testMT.herokuListCoordination1();
 	}
 	
 	/**
@@ -412,18 +421,47 @@ public class MainTestFile {
 	 * */
 	public String genAcceptsCode(ArrayList<TreeNode> input) {
 		String rs = "";
+		ArrayList<String> acceptsList = new ArrayList<String>();
+		
 		for (int i=0 ; i<input.size() ; i++) {
-			rs += "\t\tport(" + input.get(i).getComponentTypeName() + "Connector.class, \"" + input.get(i).getPortTypeName() + "\")"
+			String tmp_accept = "\t\tport(" + input.get(i).getComponentTypeName() + "Connector.class, \"" + input.get(i).getPortTypeName() + "\")"
 					+ ".accepts(";
 			StringJoiner joiner = new StringJoiner(", ");
+			ArrayList<String> listAcceptElements = new ArrayList<String>();
 			for (int j=0 ; j<input.size() ; j++) {
 				if (i != j) {
 					String s = input.get(j).getComponentTypeName() + "Connector.class, \"" + input.get(j).getPortTypeName() + "\"";
-					joiner.add(s);
+					listAcceptElements.add(s);
 				}
 			}
-			rs += joiner.toString() + ");\n";
+			ArrayList<String> newList = (ArrayList<String>) listAcceptElements.stream().distinct().collect(Collectors.toList());
+			for (String element : newList) {
+				joiner.add(element);
+			}
+			tmp_accept += joiner.toString() + ");\n";
+			acceptsList.add(tmp_accept);
 		}
+		ArrayList<String> newAcceptsList = (ArrayList<String>) acceptsList.stream().distinct().collect(Collectors.toList());
+		for (String acceptSentence : newAcceptsList) {
+			rs += acceptSentence;
+		}
+//		for (int i=0 ; i<input.size() ; i++) {
+//			rs += "\t\tport(" + input.get(i).getComponentTypeName() + "Connector.class, \"" + input.get(i).getPortTypeName() + "\")"
+//					+ ".accepts(";
+//			StringJoiner joiner = new StringJoiner(", ");
+//			ArrayList<String> listAcceptElements = new ArrayList<String>();
+//			for (int j=0 ; j<input.size() ; j++) {
+//				if (i != j) {
+//					String s = input.get(j).getComponentTypeName() + "Connector.class, \"" + input.get(j).getPortTypeName() + "\"";
+//					listAcceptElements.add(s);
+//				}
+//			}
+//			ArrayList<String> newList = (ArrayList<String>) listAcceptElements.stream().distinct().collect(Collectors.toList());
+//			for (String element : newList) {
+//				joiner.add(element);
+//			}
+//			rs += joiner.toString() + ");\n";
+//		}
 		
 		return rs;
 	}
