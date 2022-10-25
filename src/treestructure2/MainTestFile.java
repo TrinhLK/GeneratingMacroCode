@@ -37,7 +37,7 @@ public class MainTestFile {
 		String connectorString19 = "[(HerokuClearDBMySQL.on)-(HerokuPostgres.on)-(HerokuScoutAPM.on)-(HerokuNewRelicAPM.on)-(Deployer.setAddonsForUS)]`-(HerokuRegion.setAddonsForUS)";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
 		String connectorString20 = "[(HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.on) - (HerokuNewRelicAPM.on) - (Deployer.setAddonsForEU)]` - (HerokuRegion.setAddonsForEU)";//[1a'-1b'-1c]-2-[3a'-[3b-3c]'-3d]
 		String connectorString211 = "(Tracker.broadcast)`-[(Peer.listen)`-[(Peer.listen)-(Peer.listen)]`]" ;
-		String connectorString212 = "(Tracker.broadcast)`-[(Peer.listen)-(Peer.listen)]-(Peer.listen)-(Peer.speak)" ;
+		String connectorString212 = "(Tracker.broadcast)`-(Tracker.broadcast)`-(Peer.speak)-(Peer.listen)-(Peer.listen)" ;
 		
 		
 		System.out.println("--- String 1: " + connectorString);
@@ -122,7 +122,7 @@ public class MainTestFile {
 			"(HerokuDynoType.sendDynoResponse) - (Deployer.receiveDynoResponse)",
 			"(HerokuRegion.toUS) - (Deployer.setUSRegion)",
 			"(HerokuRegion.toEU) - (Deployer.setEURegion)",
-			"HerokuRegion.setAddonsForEU)` - (HerokuRegion.setAddonsForUS)` - (HerokuPostgres.on) - (HerokuClearDBMySQL.on) - (HerokuScoutAPM.on) - (HerokuNewRelicAPM.on)",
+			"(HerokuRegion.setAddonsForEU)` - (HerokuRegion.setAddonsForUS)` - (HerokuPostgres.on) - (HerokuClearDBMySQL.on) - (HerokuScoutAPM.on) - (HerokuNewRelicAPM.on)",
 			"[(HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.on) - (HerokuNewRelicAPM.on) - (Deployer.setAddonsForUS)]` - (HerokuRegion.setAddonsForUS)",
 			"[(HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.on) - (HerokuNewRelicAPM.on) - (Deployer.setAddonsForEU)]` - (HerokuRegion.setAddonsForEU)",
 			"(HerokuRegion.setAddonsForUS)` - (Deployer.setAddonsForUS)",
@@ -227,7 +227,7 @@ public class MainTestFile {
 			"(Deployer.resetAll)` - (HerokuBuildpack.removeJvm)",
 			"(Deployer.resetAll)` - (HerokuBuildpack.removePython)",
 			"(Deployer.resetAll)` - (HerokuBuildpack.removeRuby)",
-			"(Deployer.resetAll)` - (HerokuBuildpack.removeNodejs)",
+			"(Deployer.resetAll)` - (HerokuBuil dpack.removeNodejs)",
 			"(Deployer.resetAll)` - (HerokuBuildpack.removeClojure)",
 			"(Deployer.resetAll)` - (HerokuBuildpack.removeGradle)",
 			"(Deployer.resetAll)` - (HerokuBuildpack.removePhp)",
@@ -260,7 +260,7 @@ public class MainTestFile {
 			"(HerokuDynoType.sendDynoResponse) - (Deployer.receiveDynoResponse)",
 			"(HerokuRegion.toUS) - (Deployer.setUSRegion)",
 			"(HerokuRegion.toEU) - (Deployer.setEURegion)",
-			"HerokuRegion.setAddonsForEU)` - (HerokuRegion.setAddonsForUS)` - (HerokuPostgres.on) - (HerokuClearDBMySQL.on) - (HerokuScoutAPM.on) - (HerokuNewRelicAPM.on)",
+			"(HerokuRegion.setAddonsForEU)` - (HerokuRegion.setAddonsForUS)` - (HerokuPostgres.on) - (HerokuClearDBMySQL.on) - (HerokuScoutAPM.on) - (HerokuNewRelicAPM.on)",
 			"[(HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.on) - (HerokuNewRelicAPM.on) - (Deployer.setAddonsForUS)]` - (HerokuRegion.setAddonsForUS)",
 			"[(HerokuClearDBMySQL.on) - (HerokuPostgres.on) - (HerokuScoutAPM.on) - (HerokuNewRelicAPM.on) - (Deployer.setAddonsForEU)]` - (HerokuRegion.setAddonsForEU)",
 			"(HerokuRegion.setAddonsForUS)` - (Deployer.setAddonsForUS)",
@@ -391,8 +391,8 @@ public class MainTestFile {
 	}
 	public static void main(String[] args) {
 		MainTestFile testMT = new MainTestFile();
-		testMT.test();
-//		testMT.herokuListCoordination1();
+//		testMT.test();
+		testMT.herokuListCoordination1();
 	}
 	
 	/**
